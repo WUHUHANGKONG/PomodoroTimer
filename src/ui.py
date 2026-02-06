@@ -1,38 +1,3 @@
-############################################################
-# 📘 文件说明：
-# 本文件实现的功能：用户界面（UI）构建与交互逻辑处理，负责窗口渲染及事件绑定。
-#
-# 📋 程序整体伪代码（中文）：
-# 1. 初始化 UI 库（如 CustomTkinter）
-# 2. 构建主窗口与布局容器
-# 3. 绑定按钮点击与事件回调
-# 4. 启动 GUI 主事件循环
-#
-# 🔄 程序流程图（逻辑流）：
-# ┌──────────┐
-# │  输入数据 │
-# └─────┬────┘
-#       ↓
-# ┌────────────┐
-# │  核心处理逻辑 │
-# └─────┬──────┘
-#       ↓
-# ┌──────────┐
-# │  输出结果 │
-# └──────────┘
-#
-# 📊 数据管道说明：
-# 数据流向：用户操作（点击/输入） → 事件回调函数 → 核心逻辑调用 → 界面状态更新
-#
-# 🧩 文件结构：
-# - 依赖库：threading, config, customtkinter, time, core
-# - 类 (Class)：MiniFloatWindow - (封装核心对象)
-# - 类 (Class)：PomodoroApp - (封装核心对象)
-#   └─ 核心方法：select_frame, on_preset_click, on_slider_drag...
-#
-# 🕒 创建时间：2026-02-06
-############################################################
-
 # src/ui.py
 import customtkinter as ctk
 import time
@@ -61,7 +26,7 @@ class MiniFloatWindow(ctk.CTkToplevel):
         self.lbl_time = ctk.CTkLabel(
             self, textvariable=time_var,
             font=AppConfig.MINI_TIME_FONT,
-            text_color=AppConfig.COLOR_PRIMARY  # 使用新变量名
+            text_color=AppConfig.COLOR_PRIMARY
         )
         self.lbl_time.pack(side="left", padx=(20, 10))
 
@@ -88,11 +53,9 @@ class PomodoroApp:
         self.root = ctk.CTk()
         self.root.title(AppConfig.TITLE)
 
-        # 1. 窗口初始化
         self._set_window_center(AppConfig.SIZE_MAIN)
         self.root.minsize(900, 600)
 
-        # 2. 设置图标
         try:
             self.root.iconbitmap(ResourceManager.get_path("assets/icon.ico"))
         except:
@@ -102,6 +65,7 @@ class PomodoroApp:
         self.is_running = False
         self.time_left = 0
         self.current_duration = 25
+        self.current_tag = AppConfig.FOCUS_TAGS[0]
 
         self.time_str_var = ctk.StringVar(value="25:00")
         self.greeting_var = ctk.StringVar(value="准备好进入心流状态了吗？🌱")
@@ -119,22 +83,15 @@ class PomodoroApp:
         self._refresh_stats()
         self.select_frame("timer")
 
-        # 3. 【关键修复】最后执行“抢焦点”，确保窗口跳出来
         self._bring_to_front()
 
-    # --- ✨ 新增：强力抢焦点方法 ---
     def _bring_to_front(self):
-        """强制窗口跳到最前并获取焦点"""
-        self.root.deiconify()  # 确保没被最小化
-        self.root.lift()  # 提升窗口层级
-        self.root.focus_force()  # 强制获取输入焦点
-
-        # 开启置顶
+        self.root.deiconify()
+        self.root.lift()
+        self.root.focus_force()
         self.root.attributes('-topmost', True)
-        # 【修改】延长到 200ms，让人眼能捕捉到，系统也能反应过来
         self.root.after(200, lambda: self.root.attributes('-topmost', False))
 
-    # --- 辅助方法 ---
     def _set_window_center(self, size_str):
         try:
             w_str, h_str = size_str.split('x')
@@ -176,7 +133,6 @@ class PomodoroApp:
         row = ctk.CTkFrame(parent, fg_color="transparent")
         row.pack(fill="x", pady=15, padx=100)
         ctk.CTkLabel(row, text=title, font=("微软雅黑", 18), text_color=AppConfig.COLOR_TEXT_MAIN).pack(side="left")
-        # 修复：直接使用 COLOR_PRIMARY，不依赖兼容别名
         ctk.CTkLabel(row, textvariable=var, font=("Roboto Medium", 24),
                      text_color=AppConfig.COLOR_PRIMARY).pack(side="right")
 
@@ -219,18 +175,19 @@ class PomodoroApp:
 
         # 1. 暖心问候语
         ctk.CTkLabel(self.center_box, textvariable=self.greeting_var,
-                     font=AppConfig.GREETING_FONT, text_color=AppConfig.COLOR_TEXT_MAIN).pack(pady=(0, 30))
+                     font=AppConfig.GREETING_FONT, text_color=AppConfig.COLOR_TEXT_MAIN).pack(pady=(0, 20))
 
-        # 2. 超大时间显示 (只读)
+        # 2. 超大时间显示
         self.lbl_big_time = ctk.CTkLabel(self.center_box, textvariable=self.time_str_var,
                                          font=AppConfig.DISPLAY_TIME_FONT,
                                          text_color=AppConfig.COLOR_PRIMARY)
-        self.lbl_big_time.pack(pady=10)
+        self.lbl_big_time.pack(pady=5)
 
-        # 3. 智能选择区
+        # 3. 智能选择区 (容器)
         self.control_panel = ctk.CTkFrame(self.center_box, fg_color="transparent")
-        self.control_panel.pack(pady=30)
+        self.control_panel.pack(pady=20)
 
+        # 3.1 时间预设 (绿色系)
         self.seg_button = ctk.CTkSegmentedButton(
             self.control_panel,
             values=["15 分钟", "25 分钟", "45 分钟", "60 分钟"],
@@ -246,6 +203,7 @@ class PomodoroApp:
         self.seg_button.set("25 分钟")
         self.seg_button.pack(pady=10)
 
+        # 3.2 滑块 (绿色系)
         self.slider = ctk.CTkSlider(
             self.control_panel,
             from_=5, to=120, number_of_steps=115,
@@ -258,6 +216,34 @@ class PomodoroApp:
         self.slider.set(25)
         self.slider.pack(pady=10)
 
+        # --- ✨ 优化后的标签选择区 ---
+
+        # 增加一个视觉分隔和提示
+        tag_frame = ctk.CTkFrame(self.control_panel, fg_color="transparent")
+        tag_frame.pack(pady=(25, 0))  # 增加上方间距，与时间选择区隔开
+
+        ctk.CTkLabel(tag_frame, text="🔖 当前专注类型",
+                     font=("微软雅黑", 12, "bold"),
+                     text_color=AppConfig.COLOR_TEXT_SUB).pack(pady=(0, 8))
+
+        # 标签选择器 (蓝色系)
+        self.tag_seg = ctk.CTkSegmentedButton(
+            tag_frame,
+            values=AppConfig.FOCUS_TAGS,
+            command=self.on_tag_change,
+            font=AppConfig.TAG_FONT,
+            height=AppConfig.TAG_HEIGHT,
+            fg_color=AppConfig.COLOR_SECONDARY_BG,
+            # ✨ 使用我们定义的新蓝色
+            selected_color=AppConfig.COLOR_TAG_SELECTED,
+            selected_hover_color=AppConfig.COLOR_TAG_HOVER,
+            unselected_color=AppConfig.COLOR_SECONDARY_BG,
+            unselected_hover_color="#E0E0E0"
+        )
+        self.tag_seg.set(AppConfig.FOCUS_TAGS[0])
+        self.tag_seg.pack()
+
+        # 4. 开始按钮
         self.btn_start = ctk.CTkButton(
             self.center_box,
             text="🚀 开启专注",
@@ -306,6 +292,9 @@ class PomodoroApp:
             self.seg_button.set("")
         self.update_display_time(mins)
 
+    def on_tag_change(self, value):
+        self.current_tag = value
+
     def update_display_time(self, mins):
         self.time_str_var.set(f"{mins:02d}:00")
 
@@ -317,7 +306,8 @@ class PomodoroApp:
         self.time_left = self.work_time
         self.is_running = True
 
-        self.greeting_var.set("保持专注，你正在变强...")
+        self.greeting_var.set(f"正在进行 [{self.current_tag}]，保持专注...")
+
         self.root.withdraw()
         self.mini_window = MiniFloatWindow(self.root, self.time_str_var, self.stop_focus)
 
@@ -334,7 +324,7 @@ class PomodoroApp:
             self.time_str_var.set("00:00")
             self.is_running = False
             SoundManager.play_finish()
-            DataManager.save_record(self.current_duration)
+            DataManager.save_record(self.current_duration, self.current_tag)
             self.root.after(0, self._restore_finish_ui)
 
     def _restore_finish_ui(self):
@@ -343,11 +333,10 @@ class PomodoroApp:
             self.mini_window = None
         self.root.deiconify()
 
-        self.greeting_var.set("🎉 太棒了！休息一下吧！")
+        self.greeting_var.set(f"🎉 [{self.current_tag}] 任务完成！休息一下吧！")
         self._refresh_stats()
         self.update_display_time(self.current_duration)
 
-        # 计时结束回来，抢焦点提醒用户
         self._bring_to_front()
 
     def stop_focus(self):
@@ -360,7 +349,6 @@ class PomodoroApp:
         self.greeting_var.set("没关系，休息是为了走更远的路。")
         self.update_display_time(self.current_duration)
 
-        # 停止回来，抢焦点
         self._bring_to_front()
 
     def run(self):
