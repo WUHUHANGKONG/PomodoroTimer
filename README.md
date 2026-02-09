@@ -56,6 +56,8 @@
 3. **Run the application**
    ```bash
     python main.py
+
+---
    
 ## 🏗️ Architecture
 
@@ -73,6 +75,8 @@ graph TD
     C --> D[("JSON Files")]
     A --> E["Timer Engine (State Machine)"]
     E --> A
+
+---
 
 ## ⚙️ Configuration
 
