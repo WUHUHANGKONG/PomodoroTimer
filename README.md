@@ -68,6 +68,7 @@ This project is not just a script; it's engineered with scalability in mind, mak
 - **Event-Driven:** Uses Tkinter's main loop (`.after()`) instead of unstable threading for UI updates.
 - **Config Management:** Hot-loadable configuration system.
 
+
 ```mermaid
 graph TD
     A["UI Layer (View)"] --> B["Service Layer"]
