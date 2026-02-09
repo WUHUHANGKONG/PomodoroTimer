@@ -68,10 +68,10 @@ This project is not just a script; it's engineered with scalability in mind, mak
 
 ```mermaid
 graph TD
-    A[UI Layer (View)] --> B[Service Layer]
-    B --> C[Repository Layer]
-    C --> D[(JSON Files)]
-    A --> E[Timer Engine (State Machine)]
+    A["UI Layer (View)"] --> B["Service Service"]
+    B --> C["Repository Layer"]
+    C --> D[("JSON Files")]
+    A --> E["Timer Engine (State Machine)"]
     E --> A
 
 ## ⚙️ Configuration
