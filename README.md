@@ -76,9 +76,9 @@ flowchart TD
     C --> D[("JSON Files")]
     A --> E["Timer Engine (State Machine)"]
     E --> A
+```
 
 
----
 
 ## ⚙️ Configuration
 
